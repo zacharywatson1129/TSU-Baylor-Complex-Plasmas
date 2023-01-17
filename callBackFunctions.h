@@ -13,6 +13,12 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 }
 
+/*	Explanation of some variables.
+	Pause, 0 means we are not paused, 1 means we are.
+
+*/
+
+
 void KeyPressed(unsigned char key, int x, int y)
 {
 	float dx = 0.2;
@@ -55,15 +61,32 @@ void KeyPressed(unsigned char key, int x, int y)
 		glMatrixMode(GL_MODELVIEW);
 		drawPicture();
 	}
+	if (key == 'F') { // Orthogonal view
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		// glOrtho(-0.2, 0.2, -0.2, 0.2, Near, Far);
+		glOrtho(-RadiusOfCavity, RadiusOfCavity, -RadiusOfCavity, RadiusOfCavity, Near, Far);
+		glMatrixMode(GL_MODELVIEW);
+		drawPicture();
+	}
 	
-	if(key == 'p')
+	if (key == 'p') // Now, p just toggles the simulation on and off.
+	{
+		if (Pause == 0) {
+			Pause = 1;
+		} else
+		{
+			Pause = 0;
+		}
+	}
+	/*if(key == 'p') // unpause
 	{
 		Pause = 1;
 	}
-	if(key == 'P')
+	if(key == 'P')	// pause
 	{
 		Pause = 0;
-	}
+	}*/
 	
 	if(key == 'r')
 	{
@@ -542,6 +565,31 @@ void KeyPressed(unsigned char key, int x, int y)
 		errorCheck("cudaMemcpy IonWakeGPU up");
 		
 		drawPicture();
+	}
+	if (key == 'h') 
+	{
+	
+		FILE *fptr;
+  
+	    	char filename[100] = "help.txt", c;
+	  
+	    	// Open file
+	    	fptr = fopen(filename, "r");
+	    	if (fptr == NULL)
+	    	{
+			printf("Cannot open file \n");
+			exit(0);
+		}
+		  
+		// Read contents from file
+		c = fgetc(fptr);
+		while (c != EOF)
+		{
+			printf ("%c", c);
+			c = fgetc(fptr);
+		}
+		 
+		fclose(fptr);	
 	}
 }
 

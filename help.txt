@@ -1,0 +1,60 @@
+Help File for the Complex Plasmas Simulation Program.
+
+Following is the keys and their corresponding action:
+	
+	'q' - (quit) - exit the application.
+	
+	'o' - switch to top view
+	
+	'O' - switch to side view
+	
+	'f' - switch to frustrum view
+	
+	'F' - switch to orthogonal view
+	
+	'p' - pause the simulation.
+	
+	'P' - unpause the simulation (you must press this upon startup, the simulation is paused by default)
+	
+	'r' - switch to rotate mode
+
+	'R' - switch to Translate mode
+
+	'x' - hold key to rotate on x***********
+
+	'X' - hold to rotate the other way***************
+
+	'y' - hold key to rotate on y***********
+
+	'Y' - hold to rotate the other way***************
+
+	'z' - hold key to rotate on z************
+
+	'Z' - hold to rotate the other way***************
+
+	't' - turn tracing on (shows the lines of paths of the particles)
+
+	'T' - turn tracing off
+
+	'b' - turn on showing the bottom ring (the plate)
+
+	'B' - turn off showing the bottom ring
+	
+	'm' - start recording the simulation window.
+	
+	'M' - stop recording the simulation window.
+	
+	'D' - hold this key to increase drag
+	
+	'd' - hold this key to decrease drag
+	
+	'V' - increase the power on the lower plate
+	
+	'v' - decrease the power on the lower plate
+
+	'C' - increase the power on the side cavity
+
+	'c' - decrease the power on the side cavity
+	
+	
+

@@ -1,0 +1,5 @@
+Why can't we just use one letter to toggle pause, one letter to toggle translating, one letter for toggling
+starting a movie, etc.? 
+
+Here is a good source to look at for when we need more GUI stuff.
+https://github.com/codeplea/opengl-tcltk

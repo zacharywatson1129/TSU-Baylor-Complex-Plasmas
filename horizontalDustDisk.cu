@@ -1,6 +1,6 @@
 // nvcc horizontalDustDisk.cu -o dust -lglut -lm -lGLU -lGL
 //To force kill hit "control c" in the window you launched it from.
-
+// #include <gtk/gtk.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -18,6 +18,12 @@ using namespace std;
 
 #define PI 3.141592654
 #define BLOCK 256
+
+#define TOP_VIEW 1
+#define SIDE_VIEW 2
+#define BOTTOM_RING 20
+#define BASE_ION_UP 21
+#define BASE_ION_DOWN 22
 
 struct ionWakeInfoStructure
 {
@@ -604,8 +610,6 @@ void setInitialConditions()
 	printf("\n ********************************************************************************\n");
 }
 
-
-
 void drawPicture()
 {
 	if(Trace == 0)
@@ -752,7 +756,7 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 					// For a coulombic force use this.
 					//forceMag = -coulombConstant*chargeYou[yourSharedId]*chargeMe/d2;
 					
-					// For a Yukawa force use this.
+					// For a Yukawa force use this. A Coulombic force only takes into account regular electrons or regular ions interacting with one another. A Yukawa force takes into account that an ion or dust grain or whatever may have electrons and stuff floating around it which shields it from interacting with other particles after a certain distance. Because it takes all this extra stuff into account, it's more accurate and we want to use it instead of the Coulombic force.
 					forceMag = (-coulombConstant*chargeYou[yourSharedId]*chargeMe/d2)*(1.0f + d/debyeLength)*exp(-d/debyeLength);
 					
 					forceMeX += forceMag*dx/d;
@@ -794,14 +798,14 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 		
 		// Getting dust to bottom plate force.
 		// e field is bottomePlatesCharge*(posMeY - sheathHeight). This is the linear force that starts at the sheath. We got this from Dr. Mathews.
-		if(posMeY < sheathHeight)
+		if (posMeY < sheathHeight)
 		{
 			forceMeY += -chargeMe*bottomePlatesCharge*(posMeY - sheathHeight);
 		}
 		
 		// Getting culomic push back from the cavity.
 		d  = sqrt(posMeX*posMeX + posMeZ*posMeZ);
-		if(d != 0.0) // If it is zero nothing needs to be done.
+		if (d != 0.0) // If it is zero nothing needs to be done.
 		{
 			forceMag = -chargeMe*cavityCharge*pow(d/radiusOfCavity,12.0);
 			forceMeX += forceMag*posMeX/d;
@@ -1006,6 +1010,39 @@ void errorCheck(const char *message)
   }
 }
 
+void processMenuEvents(int option);
+
+void createGLUTMenus() {
+	int menu;
+	
+	// create the menu and tell glut that
+	// "processMenuEvents" will handle the events
+	menu = glutCreateMenu(processMenuEvents);
+	
+	// add entries to our menu
+	glutAddMenuEntry("Top View - (o)", TOP_VIEW);
+	glutAddMenuEntry("Side View - (O)", SIDE_VIEW);
+	// glutAddMenuEntry("Pause - (p)")
+
+	
+	// attach the menu to the right button
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void processMenuEvents(int option) {
+	switch (option) {
+		// 
+		case TOP_VIEW:
+			KeyPressed('o', 0, 0);
+			break;
+		case SIDE_VIEW:
+			KeyPressed('O', 0, 0);
+			break;
+		
+			//KeyPressed(	)
+	}
+}
+
 int main(int argc, char** argv)
 {
 	setup();
@@ -1082,14 +1119,21 @@ int main(int argc, char** argv)
 	glutMouseFunc(mymouse);
 	glutKeyboardFunc(KeyPressed);
 	glutIdleFunc(idle);
+	createGLUTMenus(); // This creates the right-click menus.
 	glutMainLoop();
 	return 0;
 }
+
+
+
+
+
 
 /*
 	Dust parameters:
 	mass =   	7.70000e-13 	kg
 	charge =  	-3.20000e-15  	Coulombs
+
 	radius = 	4.90000e-06 	m
 
 	#Parabolic potential...radial confinement
@@ -1097,6 +1141,7 @@ int main(int argc, char** argv)
 	Include polynomial potential?	1			!0=NO, 1=YES--overrides parabolic potential
 	Eigenfrequency squared			0.5685   	!Eigenfrequency for the potential
 	Radial extent of crystal		0.063     	!in meters. For use with polynomial pot
+
 
 	#Plasma and gas parameters
 	Ion plasma density				1e14		!Number density 1/m^3
@@ -1106,6 +1151,7 @@ int main(int argc, char** argv)
 
 
 	// Height above lower electrode defined to be at z = 0
+
 	double height = pos[Z];
 	double height_sq = pos[Z]*pos[Z];
 
@@ -1115,28 +1161,33 @@ int main(int argc, char** argv)
 	// above the sheath height, the electric field is zero
 	  
 	if(pos[Z] < .0106)
+
 	{
 		e_field = 2 * 3.44e5* (pos[Z] - .0106); //for 11mm sheath
 	}
 	
 	if(pos[Z] < .0071)
 	{
+
 		e_field = 2 * 1.4e6 * (pos[Z] - .0071); //for 7mm sheath
 	}
 	
 	if(pos[Z] < .00322)
 	{
 		e_field = 2 * 6.75e6 * (pos[Z] - .00322); //for 3mm sheath
+
 	}
 	else
 	{
 		e_field = 0;
 	}
 
+
 	// 5th order polynomial e-field in z based on fluid models of GEC cell
 	// These values for a specific V_pp and pressure set in the model.
 	if (pos[Z] < 0)
 	{
+
 		e_field = -8083; //particles can't really go below electrode
 	}
 	else if (pos[Z] > .0254)
@@ -1147,10 +1198,12 @@ int main(int argc, char** argv)
 	{
     	e_field = -8083 + 553373*height + 2.0e8*height_sq + -3.017e10*height*height_sq + 1.471e12*height_sq*height_sq + -2.306e13*height*height_sq*height_sq;
     }
+
     
 	f[Z] += charge * e_field/mass - 9.81;
 	
 	For the 10th-order polynomial radial confinement
+
 
 	// Radial Polynomial Potential function:  Lorin Matthews
 	// high order polynomial in radial distance to give a very
@@ -1159,11 +1212,13 @@ int main(int argc, char** argv)
 	// 09-16-2020
 
 	void bt610_PolyPot(VECTOR f,VECTOR f_dot, VECTOR f_2dot, VECTOR f_3dot, VECTOR pos, double charge, int order )
+
 	{
 
 	// Based on potential used by Meyer, Laut, et al. PRL, 119, 255001, 2017
 	//  V_i = 0.5M(Omega_h^2 rho_i^10/R^8 + Omega_z^2 z_i^2)
 	//  where rho = sqrt(x^2 + y^2)
+
 	//  M is the mass of the particles
 	//  Omega_h and Omega_z are horizontal and vertical confining freqs
 	//  R is approximate horizontal radius of the crystal.
@@ -1171,40 +1226,164 @@ int main(int argc, char** argv)
 	//  In Meyer et al., M = 0.61e-12 kg, Q = -24648e, Omega_h=2pi*.12 rad/s
 	//  Omega_z = 2pi*14 rad/s, R = 63 mm
 
+
 	double rho, rho_sq,rho_8,rad_force, rho3;
 	double R8_inv =  bt030_RunPar.srpr_R8_inv; //=1/R^8
 	double omega_h_sq = bt030_RunPar.srpr_eigenfreq2; //2 * BT010_PI * 0.12;
 
 	rho_sq = pos[X]*pos[X] + pos[Y]*pos[Y];
 	rho_8 = rho_sq*rho_sq*rho_sq*rho_sq;
+
 	rad_force = 0.5*omega_h_sq*rho_8*R8_inv;
 	eigenfreq2 and R8 calculated from being read in from parameter file:
 	if (ptr->srpr_include_para_poten || ptr-> srpr_include_poly_poten)
 	{
+
 		ReadDbl("Eigenfrequency squared", &ptr->srpr_eigenfreq2);
 	}
 	else
 	{
 		ptr->srpr_eigenfreq2 = 0.0;
+
 	}
 	
 	if (ptr-> srpr_include_poly_poten)
 	{
 		ReadDbl("Radial extent of crystal",&dum_dbl);
+
 		dum_dbl2 = dum_dbl*dum_dbl; //R^2
 		dum_dbl2 = dum_dbl2*dum_dbl2; //R^4
 		dum_dbl2 = dum_dbl2*dum_dbl2; //R^8
 		ptr->srpr_R8_inv = 1.0/dum_dbl2;
 	}
+
 	else
 	{
 		ptr->srpr_R8_inv = 0.0;
 	}
 
 	Unfortunately, the Kodiak meltdown this summer ate my parameter files where I had tested the input values for this option.  The one thing I would change here is that the “eigenfrequency” set by Omega_h includes the effect of charge – it would be better to let this change as the charge on the particles varies.
+
 	I will send you picture of my notes in my research notebook.  And I have a note that there is a repository on GitHub, so I will see if a parameter file was saved there.
 	
 */
+
+
+
+
+
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//                   Code copied from here down is stuff I copied from a demo on GTK+. Going to try to connect things together.
+
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*      This is how you compile the gtk program. Not sure how to combine with Cuda yet though. And also, how to incorporate Glut in this.
+	gcc `pkg-config --cflags gtk+-3.0` -o modernGTK modernGTK.c `pkg-config --libs gtk+-3.0`
+	./modernGTK
+
+	
+	This simple application demonstrates how to create a simple GTK application using more modern techniques.
+	Some things differ in here from simple.c to reflect GTK3 instead of GTK2.
+	For example, it's a little more clear how the layout works.
+*/
+
+
+
+/*static void print_hello(GtkWidget *widget, gpointer data) {
+	g_print("Hello World\n"); // print to a terminal if the application was started from one.
+}
+
+static void activate(GtkApplication *app, gpointer user_data) 
+{
+	// GtkWidget is the base class that all widgets in GTK+ derive from. Manages widget lifestyle, states, and style.
+	GtkWidget *window;
+	GtkWidget *button;
+	GtkWidget *button_box;
+	GtkWidget *glBox;
+	
+	/* Actually creates the window which is a GTKWindow, a toplevel window that can contain other
+	   widgets. The window type is GTK_WINDOW_TOPLEVEL, so it has a titlebar and border (what we typically want).
+	*/
+	//window = gtk_application_window_new(app);
+	
+	/* -------- Customizing a few things: setting title, changing size of window, entering the window on the screen --------*/
+	
+	// doing this: GTK_WINDOW(window) casts the window (which is a pointer to a GtkWidget object) to a GtkWindow - GTK_WINDOW is a macro.
+	
+	//gtk_window_set_title(GTK_WINDOW(window), "GTK Tutorial");	// specify window with GTK_WINDOW(window), and pass title to display
+	//gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);	// specify window with GTK_WINDOW(window), and pass width, height
+	//gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	
+	// Decide on layout of the button
+	/*button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_container_add(GTK_CONTAINER(window), button_box);
+	
+	button = gtk_button_new_with_label("Hello World");
+	g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);  /* print_hello is the event handler, NULL because print_hello 
+										doesn't take any data.*/
+	/*g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+	// the swapped version of g_signal,_connect allows the callback function to take a parameter passed in as data.
+	gtk_container_add(GTK_CONTAINER(button_box), button); /* this will actually add the button to the window (technically the button_box, 
+								 but the button_box contains the button */
+	
+	//gtk_widget_show_all(window);
+//}*/
+
+// This is the equivalent of the glutDisplayFunc() callback function. So just draw stuff inside of here.
+//static gboolean
+//render (GtkGLArea *area, GdkGLContext *context)
+//{
+  // inside this function it's safe to use GL; the given
+  // GdkGLContext has been made current to the drawable
+  // surface used by the `GtkGLArea` and the viewport has
+  // already been set to be the size of the allocation
+
+  // we can start by clearing the buffer
+  //glClearColor (0, 0, 0, 0);
+  //glClear (GL_COLOR_BUFFER_BIT);
+
+  // draw your object
+  // draw_an_object ();
+  
+//  Display();
+
+  // we completed our drawing; the draw commands will be
+  // flushed at the end of the signal emission chain, and
+  // the buffers will be drawn on the window
+  
+//  return TRUE;
+//}
+
+//void setup_glarea (void)
+//{
+  // create a GtkGLArea instance
+  //GtkWidget *gl_area = gtk_gl_area_new ();
+
+  // connect to the "render" signal
+ // g_signal_connect (gl_area, "render", G_CALLBACK (render), NULL);
+//}*/
+
+/*int main(int argc, char *argv[]) 
+{
+
+	GtkApplication *app;
+	int status;
+	
+	app = gtk_application_new("edu.tarleton.pmg.complex-plasmas", G_APPLICATION_FLAGS_NONE);	// create a new application (just a container to hold everything)
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL); // This will cause the activate function we created to be called
+	status = g_application_run(G_APPLICATION(app), argc, argv);
+	g_object_unref(app); // Tidy up and free the memory when we are through.
+
+	return 0;
+}*/
+
+// ---------------------
+
+
 	
 	
 	
