@@ -1,0 +1,79 @@
+In this file do not use the equal sign in a comment because that is the triger to read an input.
+I tried to set the units to what I saw people using. If I didn't know I used grams, meters, seconds and coulombs.
+In the program I set the units to one that make the calculations more acurate. 
+This make a unit numbers that you multiple by to convert internal numbers into grams, meters, seconds or coulombs. 
+To get into our units take to grams, meters, seconds, or coulombs then divide by these unit numbers.
+
+* Try and make this a power of 2 and even better a power of 32. Blocks can only get to 1024 and 
+* and streaming multiprosessors have warps of 32.
+* 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144. int
+NumberOfDustParticles = 1024;
+
+* This should be in m/s^2. Double (9.81 is a good number)
+Gravity = 9.81;
+
+* Density of dust particle in grams per centimeter cubed. double (1.51 is the typical density)
+DustDensity = 1.51;
+
+* Average diameter of dust particle in microns. double (8.98 is the typical diameter)
+BaseDustDiameter = 8.89;
+
+* Dust diameter flucuation Standard Deviation in microns. double (0.09 is the advertised standard StD)
+DustDiameterStandardDeviation = 0.01;
+
+* Coulomb constant in g*m^3*s^-2*C^-2. double (8.987551792e12 standard number)
+CoulombConstant = 8.987551792e12;
+
+* Charge of an electron in coulombs. double (1.60217662e-19 standard number)
+ElectronCharge = 1.60217662e-19;
+
+* Average number of electrons on a dust particle per diameter in number per micron. double (1000 is the standard number)
+BaseElectronsPerUnitDiameter = 1000.0;
+
+* The standard deviation of electrons to added or subtracted each time step from a dust grain. Double (Not sure what this should be maybe 5 to 10)
+ElectronStdPerUnitDiameter = 20.0;
+
+* Debye length in micro meters. double (45.0 is what I got from Kattie)
+DebyeLength = 45.0;
+
+* This is how many debye lengths we will use to turn on and off the ionwake adjustments. double (6.0 is a good guess)
+CutOffMultiplier = 6.0;
+
+* The hieght of the sheath in milimeters. double ( 10.6, 7.1, 3.22 were in the email from Dr. M)
+SheathHeight = 10.6;
+
+* Initial IonWake Charge as percent of the dust charge. I will start them out a zero and you can add them on when you feel they are needed. 
+* Just reading them in here incase we want to start out at a nonzero sate in the future. double (Calvin said from 0.3 to 0.6)
+BaseIonWakeChargePercent = 0.0;
+
+* This is the ionWake distance behind the dust grain. double (Calvin said 109 microns)
+BaseIonWakeLength = 90.0.0;
+
+* Cavity wall charge charge type force. This will be a number that radial pushes the particles towards the center.
+* It will be a linear force that is multiplied by the dust charge and the distance out from the center of the cavity.
+* Its units will be grams*seconds^-2*coulomb^-1. Double (1.8e6)
+CavityCharge = 5.0e6;
+
+* Radius of cavity in centimeters. Double
+RadiusOfCavity = 0.6;
+
+* Hieght of cavity in centimeters. Double
+HieghtOfCavity = 1.2;
+
+* Bottom plate constant. Max force by bottom plate when the height of the dust is zero. Double 
+* (6.88e5, 2.8e6, 1.35e7 were in the email from Dr. M They match the sheath heights)
+* This is in kilograms*second-2*coulomb-1
+BottomePlatesCharge = 6.88e5;
+
+* This is your drag coeffecent. It needs to get tied to pressure.
+Drag = 0.3; Double
+
+* Your time step. It will be this much of a time unit, whatever that ends up being.
+Dt = 0.005; Double
+
+* How many time steps go by between sending pictures to the screen.
+DrawRate = 20; int
+
+* How many time steps go by between sending a time print to the terminal.
+PrintTimeRate = 1000; int
+
