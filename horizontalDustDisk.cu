@@ -21,6 +21,8 @@ using namespace std;
 
 #define TOP_VIEW 1
 #define SIDE_VIEW 2
+#define FRUSTRUM 3
+#define ORTHO 4
 #define BOTTOM_RING 20
 #define BASE_ION_UP 21
 #define BASE_ION_DOWN 22
@@ -954,7 +956,12 @@ void n_body()
 		PrintTimer++;
 		if(PrintTimer == PrintTimeRate) 
 		{
-			printf("\n Total run time = %f seconds", RunTime*TimeUnit);
+			system("clear");
+			printf("Total run time = %f seconds\n", RunTime*TimeUnit);
+			printf("Bottom plate charge: %f\n", BottomePlatesCharge);
+			printf("Cavity charge: %f\n", CavityCharge);
+			printf("Drag: %f\n", Drag);
+			printf("BaseIonWakeCharge: %f\n", BaseIonWakeChargePercent);
 			PrintTimer = 0;
 		}
 		
@@ -1010,36 +1017,59 @@ void errorCheck(const char *message)
   }
 }
 
-void processMenuEvents(int option);
-
+void processMainMenuEvents(int option);
+void processSubMenuEvents(int option);
+int mainMenu;
+int unPauseMenu;
 void createGLUTMenus() {
-	int menu;
-	
-	// create the menu and tell glut that
-	// "processMenuEvents" will handle the events
-	menu = glutCreateMenu(processMenuEvents);
-	
-	// add entries to our menu
-	glutAddMenuEntry("Top View - (o)", TOP_VIEW);
-	glutAddMenuEntry("Side View - (O)", SIDE_VIEW);
-	// glutAddMenuEntry("Pause - (p)")
-
-	
+	// You must create the submenu first so you have its id.
+	int viewSubMenu = glutCreateMenu(processSubMenuEvents);
+	mainMenu = glutCreateMenu(processMainMenuEvents);
 	// attach the menu to the right button
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	/* Any time we want to add a menu item to to the main menu that is a submenu, use the glutAddSubMenu function, pass the string and id of the menu created (you must create it above like a regular menu).
+	*/
+	glutAddSubMenu("Change view", viewSubMenu);
+	glutAddMenuEntry("Toggle Bottom Ring Visibility", BOTTOM_RING);
+
+	// Lets set the id to the submenu.
+	glutSetMenu(viewSubMenu);
+	glutAddMenuEntry("Top View - (o)", TOP_VIEW);
+	glutAddMenuEntry("Side View - (O)", SIDE_VIEW);
+	glutAddMenuEntry("Frustrum View - (f)", FRUSTRUM);
+	glutAddMenuEntry("Orthographic View - (F)", ORTHO);
+
+	//unPauseMenu = glutCreateMenu(processMainMenuEvents);
+
 }
 
-void processMenuEvents(int option) {
-	switch (option) {
-		// 
+void processMainMenuEvents(int option) 
+{
+	switch (option) 
+	{
+		case BOTTOM_RING:
+			KeyPressed('b', 0, 0);
+			break;
+	}
+}
+
+void processSubMenuEvents(int option)
+{
+	switch (option) 
+	{
 		case TOP_VIEW:
 			KeyPressed('o', 0, 0);
 			break;
 		case SIDE_VIEW:
 			KeyPressed('O', 0, 0);
 			break;
-		
-			//KeyPressed(	)
+		case FRUSTRUM:
+			KeyPressed('f', 0, 0);
+			break;
+		case ORTHO:
+			KeyPressed('F', 0, 0);
+			break;
 	}
 }
 

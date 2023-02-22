@@ -74,9 +74,15 @@ void KeyPressed(unsigned char key, int x, int y)
 	{
 		if (Pause == 0) {
 			Pause = 1;
+			printf("\033[1;31m");
+			printf("\nPaused\n");
+			printf("\033[0m");
 		} else
 		{
 			Pause = 0;
+			printf("\033[1;32m");
+			printf("\nUnpaused\n");
+			printf("\033[0m");
 		}
 	}
 	/*if(key == 'p') // unpause
