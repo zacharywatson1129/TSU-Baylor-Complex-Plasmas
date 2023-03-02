@@ -57,11 +57,12 @@ double	SheathHeight;
 double 	BaseIonWakeChargePercent;
 double 	BaseIonWakeLength;
 
-double 	CavityCharge;
+double 	CavityConfinementConstant;
 double 	RadiusOfCavity;
-double 	HieghtOfCavity;
-double 	BottomePlatesCharge;
+double 	HeightOfCavity;
+double 	BottomPlateConstant;
 
+double  Pressure; // Drag is dependent on pressure.
 double 	Drag;
 
 double 	Dt;
@@ -182,16 +183,16 @@ void readSimulationParameters()
 		data >> BaseIonWakeLength;
 		
 		getline(data,name,'=');
-		data >> CavityCharge;
+		data >> CavityConfinementConstant;
 		
 		getline(data,name,'=');
 		data >> RadiusOfCavity;
 		
 		getline(data,name,'=');
-		data >> HieghtOfCavity;
+		data >> HeightOfCavity;
 		
 		getline(data,name,'=');
-		data >> BottomePlatesCharge;
+		data >> BottomPlateConstant;
 		
 		getline(data,name,'=');
 		data >> Drag;
@@ -228,10 +229,10 @@ void readSimulationParameters()
 	printf("\n SheathHeight = %f microns", SheathHeight);
 	printf("\n BaseIonWakeChargePercent = %f percent of dust charge", BaseIonWakeChargePercent);
 	printf("\n BaseIonWakeLength = %f microns", BaseIonWakeLength);
-	printf("\n CavityCharge = %e ???", CavityCharge);
+	printf("\n CavityConfinementConstant = %e ???", CavityConfinementConstant);
 	printf("\n RadiusOfCavity = %f centimeters", RadiusOfCavity);
-	printf("\n HieghtOfCavity = %f centimeters", HieghtOfCavity);
-	printf("\n BottomePlatesCharge = %e kilograms*second-2*coulomb-1", BottomePlatesCharge);
+	printf("\n HeightOfCavity = %f centimeters", HeightOfCavity);
+	printf("\n BottomPlateConstant = %e kilograms*second-2*coulomb-1", BottomPlateConstant);
 	printf("\n Drag = %e ???", Drag);
 	printf("\n Dt = %f number of divisions of the final time unit.", Dt);
 	printf("\n DrawRate = %d Dts between picture draws", DrawRate);
@@ -387,20 +388,20 @@ void PutConstantsIntoOurUnits()
 	
 	// This is a force I multiple by the dust charge to push it (electrically) away from the cavity wall. It is given in grams*seconds^-2*coulomb^-1.
 	// To get it into our unit you need to divide by the apropriate units.
-	CavityCharge = CavityCharge*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
+	CavityConfinementConstant = CavityConfinementConstant*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
 	
 	// Taking cavity dimitions in cm to our units. First take them to meters then to our units.
 	RadiusOfCavity /= 100.0;
 	RadiusOfCavity /= LengthUnit;
-	HieghtOfCavity /= 100.0;
-	HieghtOfCavity /= LengthUnit;
+	HeightOfCavity /= 100.0;
+	HeightOfCavity /= LengthUnit;
 	
 	// This is the force that you multiply times the charge and distance from the bottom plate to get a force.
 	// It is given in kilograms*seconds^-2*coulomb^-1.
 	// To get it into our unit you need to divide by the apropriate units.
 	// First take kilograms to grams.
-	BottomePlatesCharge = BottomePlatesCharge*1.0e3;
-	BottomePlatesCharge = BottomePlatesCharge*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
+	BottomPlateConstant = BottomPlateConstant*1.0e3;
+	BottomPlateConstant = BottomPlateConstant*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
 	
 	// This needs to be changed into our units ??????????????
 	Drag *= 1.0;
@@ -427,10 +428,10 @@ void PutConstantsIntoOurUnits()
 	printf("\n SheathHeight = %e", SheathHeight);
 	printf("\n BaseIonWakeChargePercent = %e", BaseIonWakeChargePercent);
 	printf("\n BaseIonWakeLength = %e", BaseIonWakeLength);
-	printf("\n CavityCharge = %e", CavityCharge);
+	printf("\n CavityConfinementConstant = %e", CavityConfinementConstant);
 	printf("\n RadiusOfCavity = %e", RadiusOfCavity);
-	printf("\n HieghtOfCavity = %e", HieghtOfCavity);
-	printf("\n BottomePlatesCharge = %e", BottomePlatesCharge);
+	printf("\n HeightOfCavity = %e", HeightOfCavity);
+	printf("\n BottomPlateConstant = %e", BottomPlateConstant);
 	printf("\n Drag = %e", Drag);
 	printf("\n Dt = %e", Dt);
 	printf("\n DrawRate = %d", DrawRate);
@@ -577,7 +578,7 @@ void setInitialConditions()
 				DustPositionCPU[i].x = 0.0;
 				DustPositionCPU[i].z = 0.0;
 			}
-			DustPositionCPU[i].y = ((float)rand()/(float)RAND_MAX)*HieghtOfCavity/10.0 + HieghtOfCavity - HieghtOfCavity/10.0;
+			DustPositionCPU[i].y = ((float)rand()/(float)RAND_MAX)*HeightOfCavity/10.0 + HeightOfCavity - HeightOfCavity/10.0;
 			test = 1;
 			
 			for(int j = 0; j < i; j++)
@@ -649,8 +650,8 @@ void drawPicture()
 		if(i < divitions/2) glColor3d(1.0,0.0,0.0);
 		else glColor3d(0.0,0.0,1.0);
 		glBegin(GL_LINES);
-			glVertex3f(sin(angle*i)*RadiusOfCavity, HieghtOfCavity, cos(angle*i)*RadiusOfCavity);
-			glVertex3f(sin(angle*(i+1))*RadiusOfCavity, HieghtOfCavity, cos(angle*(i+1))*RadiusOfCavity);
+			glVertex3f(sin(angle*i)*RadiusOfCavity, HeightOfCavity, cos(angle*i)*RadiusOfCavity);
+			glVertex3f(sin(angle*(i+1))*RadiusOfCavity, HeightOfCavity, cos(angle*(i+1))*RadiusOfCavity);
 		glEnd();
 	}
 	
@@ -693,7 +694,7 @@ void drawPicture()
 	}
 }
 
-__global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, float4 *ionWake, ionWakeInfoStructure *ionWakeInfoGPU, float baseDustDiameter, float coulombConstant, float debyeLength, float cutOffMultiplier, float radiusOfCavity, float cavityCharge, float hieghtOfCavity, float sheathHeight, float baseIonWakeChargePercent, float bottomePlatesCharge, float gravity, int numberOfParticles)
+__global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, float4 *ionWake, ionWakeInfoStructure *ionWakeInfoGPU, float baseDustDiameter, float coulombConstant, float debyeLength, float cutOffMultiplier, float radiusOfCavity, float CavityConfinementConstant, float hieghtOfCavity, float sheathHeight, float baseIonWakeChargePercent, float BottomPlateConstant, float gravity, int numberOfParticles)
 {
 	float forceMag; 
 	float dx, dy, dz, d2, d, minDustDis, minDustDy;
@@ -761,6 +762,13 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 					// For a Yukawa force use this. A Coulombic force only takes into account regular electrons or regular ions interacting with one another. A Yukawa force takes into account that an ion or dust grain or whatever may have electrons and stuff floating around it which shields it from interacting with other particles after a certain distance. Because it takes all this extra stuff into account, it's more accurate and we want to use it instead of the Coulombic force.
 					forceMag = (-coulombConstant*chargeYou[yourSharedId]*chargeMe/d2)*(1.0f + d/debyeLength)*exp(-d/debyeLength);
 					
+					// d is the distance between the particles
+					// coulomb constant is K
+					// q_1, q_2
+					// d is distance between particles
+					// d2 is squared distance between particles squared, will be d²
+					// -K*        *e^(-d/lambda_de)
+					
 					forceMeX += forceMag*dx/d;
 					forceMeY += forceMag*dy/d;
 					forceMeZ += forceMag*dz/d;
@@ -799,17 +807,17 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 		forceMeY += -(chargeMe*ionWakeChargePercentMe*chargeMe/ionWakeLenghtMe)*(1.0 + ionWakeLenghtMe/debyeLength)*exp(-ionWakeLenghtMe/debyeLength);
 		
 		// Getting dust to bottom plate force.
-		// e field is bottomePlatesCharge*(posMeY - sheathHeight). This is the linear force that starts at the sheath. We got this from Dr. Mathews.
+		// e field is bottomPlatesCharge*(posMeY - sheathHeight). This is the linear force that starts at the sheath. We got this from Dr. Mathews.
 		if (posMeY < sheathHeight)
 		{
-			forceMeY += -chargeMe*bottomePlatesCharge*(posMeY - sheathHeight);
+			forceMeY += -chargeMe*BottomPlateConstant*(posMeY - sheathHeight);
 		}
 		
 		// Getting culomic push back from the cavity.
 		d  = sqrt(posMeX*posMeX + posMeZ*posMeZ);
 		if (d != 0.0) // If it is zero nothing needs to be done.
 		{
-			forceMag = -chargeMe*cavityCharge*pow(d/radiusOfCavity,12.0);
+			forceMag = -chargeMe*CavityConfinementConstant*pow(d/radiusOfCavity,12.0);
 			forceMeX += forceMag*posMeX/d;
 			forceMeZ += forceMag*posMeZ/d;
 		}
@@ -939,7 +947,7 @@ void n_body()
 {	
 	if(Pause != 1)
 	{	
-		getForces<<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseDustDiameter, CoulombConstant, DebyeLength, CutOffMultiplier, RadiusOfCavity, CavityCharge, HieghtOfCavity, SheathHeight, BaseIonWakeChargePercent, BottomePlatesCharge, Gravity, NumberOfDustParticles);
+		getForces<<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseDustDiameter, CoulombConstant, DebyeLength, CutOffMultiplier, RadiusOfCavity, CavityConfinementConstant, HeightOfCavity, SheathHeight, BaseIonWakeChargePercent, BottomPlateConstant, Gravity, NumberOfDustParticles);
 		moveDust <<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseIonWakeChargePercent, BaseIonWakeLength, DebyeLength, CutOffMultiplier, Drag, ElectronCharge, BaseElectronsPerUnitDiameter, electronStdPerUnitDiameter, Dt, RunTime, NumberOfDustParticles);
 				
 		DrawTimer++;
@@ -958,8 +966,8 @@ void n_body()
 		{
 			system("clear");
 			printf("Total run time = %f seconds\n", RunTime*TimeUnit);
-			printf("Bottom plate charge: %f\n", BottomePlatesCharge);
-			printf("Cavity charge: %f\n", CavityCharge);
+			printf("Bottom plate charge: %f\n", BottomPlateConstant);
+			printf("Cavity charge: %f\n", CavityConfinementConstant);
 			printf("Drag: %f\n", Drag);
 			printf("BaseIonWakeCharge: %f\n", BaseIonWakeChargePercent);
 			PrintTimer = 0;
@@ -1086,16 +1094,16 @@ int main(int argc, char** argv)
 
 	//Direction here your eye is located location
 	EyeX = 0.0*RadiusOfCavity;
-	EyeY = 0.5*HieghtOfCavity;
+	EyeY = 0.5*HeightOfCavity;
 	EyeZ = 3.0*RadiusOfCavity;
 	
 	//EyeX = 0.01*RadiusOfCavity;
-	//EyeY = HieghtOfCavity;
+	//EyeY = HeightOfCavity;
 	//EyeZ = 0.0*RadiusOfCavity;
 
 	//Where you are looking
 	CenterX = 0.0;
-	CenterY = 0.5*HieghtOfCavity;
+	CenterY = 0.5*HeightOfCavity;
 	CenterZ = 0.0;
 	CenterOfView.x = CenterX;
 	CenterOfView.y = CenterY;
@@ -1153,11 +1161,6 @@ int main(int argc, char** argv)
 	glutMainLoop();
 	return 0;
 }
-
-
-
-
-
 
 /*
 	Dust parameters:
@@ -1297,127 +1300,4 @@ int main(int argc, char** argv)
 	I will send you picture of my notes in my research notebook.  And I have a note that there is a repository on GitHub, so I will see if a parameter file was saved there.
 	
 */
-
-
-
-
-
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-//                   Code copied from here down is stuff I copied from a demo on GTK+. Going to try to connect things together.
-
-
-// -----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-/*      This is how you compile the gtk program. Not sure how to combine with Cuda yet though. And also, how to incorporate Glut in this.
-	gcc `pkg-config --cflags gtk+-3.0` -o modernGTK modernGTK.c `pkg-config --libs gtk+-3.0`
-	./modernGTK
-
-	
-	This simple application demonstrates how to create a simple GTK application using more modern techniques.
-	Some things differ in here from simple.c to reflect GTK3 instead of GTK2.
-	For example, it's a little more clear how the layout works.
-*/
-
-
-
-/*static void print_hello(GtkWidget *widget, gpointer data) {
-	g_print("Hello World\n"); // print to a terminal if the application was started from one.
-}
-
-static void activate(GtkApplication *app, gpointer user_data) 
-{
-	// GtkWidget is the base class that all widgets in GTK+ derive from. Manages widget lifestyle, states, and style.
-	GtkWidget *window;
-	GtkWidget *button;
-	GtkWidget *button_box;
-	GtkWidget *glBox;
-	
-	/* Actually creates the window which is a GTKWindow, a toplevel window that can contain other
-	   widgets. The window type is GTK_WINDOW_TOPLEVEL, so it has a titlebar and border (what we typically want).
-	*/
-	//window = gtk_application_window_new(app);
-	
-	/* -------- Customizing a few things: setting title, changing size of window, entering the window on the screen --------*/
-	
-	// doing this: GTK_WINDOW(window) casts the window (which is a pointer to a GtkWidget object) to a GtkWindow - GTK_WINDOW is a macro.
-	
-	//gtk_window_set_title(GTK_WINDOW(window), "GTK Tutorial");	// specify window with GTK_WINDOW(window), and pass title to display
-	//gtk_window_set_default_size(GTK_WINDOW(window), 800, 500);	// specify window with GTK_WINDOW(window), and pass width, height
-	//gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-	
-	// Decide on layout of the button
-	/*button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_container_add(GTK_CONTAINER(window), button_box);
-	
-	button = gtk_button_new_with_label("Hello World");
-	g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);  /* print_hello is the event handler, NULL because print_hello 
-										doesn't take any data.*/
-	/*g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-	// the swapped version of g_signal,_connect allows the callback function to take a parameter passed in as data.
-	gtk_container_add(GTK_CONTAINER(button_box), button); /* this will actually add the button to the window (technically the button_box, 
-								 but the button_box contains the button */
-	
-	//gtk_widget_show_all(window);
-//}*/
-
-// This is the equivalent of the glutDisplayFunc() callback function. So just draw stuff inside of here.
-//static gboolean
-//render (GtkGLArea *area, GdkGLContext *context)
-//{
-  // inside this function it's safe to use GL; the given
-  // GdkGLContext has been made current to the drawable
-  // surface used by the `GtkGLArea` and the viewport has
-  // already been set to be the size of the allocation
-
-  // we can start by clearing the buffer
-  //glClearColor (0, 0, 0, 0);
-  //glClear (GL_COLOR_BUFFER_BIT);
-
-  // draw your object
-  // draw_an_object ();
-  
-//  Display();
-
-  // we completed our drawing; the draw commands will be
-  // flushed at the end of the signal emission chain, and
-  // the buffers will be drawn on the window
-  
-//  return TRUE;
-//}
-
-//void setup_glarea (void)
-//{
-  // create a GtkGLArea instance
-  //GtkWidget *gl_area = gtk_gl_area_new ();
-
-  // connect to the "render" signal
- // g_signal_connect (gl_area, "render", G_CALLBACK (render), NULL);
-//}*/
-
-/*int main(int argc, char *argv[]) 
-{
-
-	GtkApplication *app;
-	int status;
-	
-	app = gtk_application_new("edu.tarleton.pmg.complex-plasmas", G_APPLICATION_FLAGS_NONE);	// create a new application (just a container to hold everything)
-	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL); // This will cause the activate function we created to be called
-	status = g_application_run(G_APPLICATION(app), argc, argv);
-	g_object_unref(app); // Tidy up and free the memory when we are through.
-
-	return 0;
-}*/
-
-// ---------------------
-
-
-	
-	
-	
-	
-
- 
 

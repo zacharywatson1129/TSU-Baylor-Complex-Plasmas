@@ -7,12 +7,12 @@ To get into our units take to grams, meters, seconds, or coulombs then divide by
 * Try and make this a power of 2 and even better a power of 32. Blocks can only get to 1024 and 
 * and streaming multiprosessors have warps of 32.
 * 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144. int
-NumberOfDustParticles = 2048oO;
+NumberOfDustParticles = 1024;
 
-* This should be in m/s^2. Double (9.81 is a good number)
+* This should be in meters per second squred (m/s^2). Double (9.81 is a good number)
 Gravity = 9.81;
 
-* Density of dust particle in grams per centimeter cubed. double (1.51 is the typical density)
+* Density of dust particle in grams per centimeter cubed (g/cm^3). double (1.51 is the typical density)
 DustDensity = 1.51;
 
 * Average diameter of dust particle in microns. double (8.98 is the typical diameter)
@@ -52,21 +52,27 @@ BaseIonWakeLength = 90.0.0;
 * Cavity wall charge charge type force. This will be a number that radial pushes the particles towards the center.
 * It will be a linear force that is multiplied by the dust charge and the distance out from the center of the cavity.
 * Its units will be grams*seconds^-2*coulomb^-1. Double (1.8e6)
-CavityCharge = 5.0e6;
+CavityConfinementConstant = 5.0e6;
 
 * Radius of cavity in centimeters. Double
 RadiusOfCavity = 0.6;
 
 * Hieght of cavity in centimeters. Double
-HieghtOfCavity = 1.2;
+HeightOfCavity = 1.2;
 
-* Bottom plate constant. Max force by bottom plate when the height of the dust is zero. Double 
+* Bottom plate constant. Used in determining upwards force by plate on dust. Max force by bottom plate when the height of the dust is zero.
+* Multiplied by charge and and height Double 
 * (6.88e5, 2.8e6, 1.35e7 were in the email from Dr. M They match the sheath heights)
-* This is in kilograms*second-2*coulomb-1
-BottomePlatesCharge = 6.88e5;
+* This is in kilograms*second-2*coulomb-1 (kg*s^-2*C^-2)
+BottomPlateConstant = 6.88e5;
 
 * This is your drag coeffecent. It needs to get tied to pressure.
-Drag = 0.3; Double
+* This is in kg/seconds
+* Drag = 0.3; Double
+
+* Pressure will be a value which drag is dependent on. More pressure means more drag.
+* Not quite sure which unit pressure is in.
+Pressure = 50; Double
 
 * Your time step. It will be this much of a time unit, whatever that ends up being.
 Dt = 0.005; Double

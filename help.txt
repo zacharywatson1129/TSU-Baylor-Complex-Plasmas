@@ -44,10 +44,6 @@ Following is the keys and their corresponding action:
 	
 	'M' - stop recording the simulation window.
 	
-	'D' - hold this key to increase drag
-	
-	'd' - hold this key to decrease drag
-	
 	'V' - increase the power on the lower plate
 	
 	'v' - decrease the power on the lower plate
@@ -56,5 +52,8 @@ Following is the keys and their corresponding action:
 
 	'c' - decrease the power on the side cavity
 	
+	'4' - increase power on bottom plate by increasing constant
+	
+	'$' - decrease power on bottom plate by decreasing constant	
 	
 

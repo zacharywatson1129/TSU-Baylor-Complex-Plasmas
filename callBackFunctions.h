@@ -225,12 +225,12 @@ void KeyPressed(unsigned char key, int x, int y)
 	
 	
 	//EyeX = 2.0*RadiusOfCavity;
-	//EyeY = 0.5*HieghtOfCavity;
+	//EyeY = 0.5*HeightOfCavity;
 	//EyeZ = 2.0*RadiusOfCavity;
 	
 	//Where you are looking
 	//CenterX = 0.0;
-	//CenterY = 0.5*HieghtOfCavity;
+	//CenterY = 0.5*HeightOfCavity;
 	//CenterZ = 0.0;
 	
 	//CenterOfView.x = EyeX;
@@ -242,31 +242,31 @@ void KeyPressed(unsigned char key, int x, int y)
 	if(key == 'V')
 	{
 		deltaPowerBottomPlate = deltaPowerBottomPlate*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
-		BottomePlatesCharge += deltaPowerBottomPlate;
-		printf("\nBottomePlatesCharge = %e", BottomePlatesCharge/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
+		BottomPlateConstant += deltaPowerBottomPlate;
+		printf("\nBottomePlatesCharge = %e", BottomPlateConstant/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
 	}
 	if(key == 'v')
 	{
 		deltaPowerBottomPlate = deltaPowerBottomPlate*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
-		BottomePlatesCharge -= deltaPowerBottomPlate;
-		if(BottomePlatesCharge < 0.0) BottomePlatesCharge = 0.0;
-		printf("\nBottomePlatesCharge = %e", BottomePlatesCharge/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
+		BottomPlateConstant -= deltaPowerBottomPlate;
+		if(BottomPlateConstant < 0.0) BottomPlateConstant = 0.0;
+		printf("\nBottomePlatesCharge = %e", BottomPlateConstant/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
 	}
 	
 	// Adjusting power on side of cavity
-	double deltaCavityCharge = 1.0e5;
+	double deltaCavityConfinementConstant = 1.0e5;
 	if(key == 'C')
 	{
-		deltaCavityCharge = deltaCavityCharge*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
-		CavityCharge += deltaCavityCharge;
-		printf("\nCavityCharge = %e", CavityCharge/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
+		deltaCavityConfinementConstant = deltaCavityConfinementConstant*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
+		CavityConfinementConstant += deltaCavityConfinementConstant;
+		printf("\nCavityConfinementConstant = %e", CavityConfinementConstant/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
 	}
 	if(key == 'c')
 	{
-		deltaCavityCharge = deltaCavityCharge*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
-		CavityCharge -= deltaCavityCharge;
-		if(CavityCharge < 0.0) CavityCharge = 0.0;
-		printf("\nCavityCharge = %e", CavityCharge/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
+		deltaCavityConfinementConstant = deltaCavityConfinementConstant*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
+		CavityConfinementConstant -= deltaCavityConfinementConstant;
+		if(CavityConfinementConstant < 0.0) CavityConfinementConstant = 0.0;
+		printf("\nCavityConfinementConstant = %e", CavityConfinementConstant/(TimeUnit*TimeUnit*ChargeUnit/MassUnit));
 	}
 	
 	// Adjusting drag or pressure
@@ -572,6 +572,15 @@ void KeyPressed(unsigned char key, int x, int y)
 		
 		drawPicture();
 	}
+	double deltaPressure = 1;
+	if (key == '4')
+	{
+		pressure += deltaPressure;
+		
+	}
+	if (key == '4')
+	{
+	}
 	if (key == 'h') 
 	{
 	
@@ -632,7 +641,7 @@ void mymouse(int button, int state, int x, int y)
 				// Flashing a big yellow ball where you selected.
 				glColor3d(1.0, 1.0, 0.0);
 					glPushMatrix();
-					glTranslatef(myX, HieghtOfCavity/2.0, myZ);
+					glTranslatef(myX, HeightOfCavity/2.0, myZ);
 					glutSolidSphere(0.5,20,20);
 				glPopMatrix();
 				glutSwapBuffers();
@@ -700,7 +709,7 @@ void mymouse(int button, int state, int x, int y)
 				// Flashing a big yellow ball where you selected.
 				glColor3d(1.0, 1.0, 0.0);
 					glPushMatrix();
-					glTranslatef(myX, HieghtOfCavity/2.0, myZ);
+					glTranslatef(myX, HeightOfCavity/2.0, myZ);
 					glutSolidSphere(0.5,20,20);
 				glPopMatrix();
 				glutSwapBuffers();
