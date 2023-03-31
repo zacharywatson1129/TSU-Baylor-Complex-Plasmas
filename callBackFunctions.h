@@ -561,7 +561,7 @@ void KeyPressed(unsigned char key, int x, int y)
 		printf("\n Diameter 0f dust grain %d = %f", SelectedDustGrainId3, (DustVelocityCPU[SelectedDustGrainId3].w*LengthUnit)*1.0e6);
 		
 		// Copying every thing back up to the GPU.
-		cudaMemcpy( DustPositionGPU, DustPositionCPU, NumberOfDustParticles*sizeof(float4), cudaMemcpyHostToDevice );
+		cudaMemcpy( DustPositionGPU, DustPositionCPU, NumberOfDustParticles*sizeof(float4), cudaMemcpyHostToDevice);
 		errorCheck("cudaMemcpy DustPositionCPU up");
 		cudaMemcpy( DustVelocityGPU, DustVelocityCPU, NumberOfDustParticles*sizeof(float4), cudaMemcpyHostToDevice );
 		errorCheck("cudaMemcpy DustVelocityGPU up");
@@ -573,13 +573,18 @@ void KeyPressed(unsigned char key, int x, int y)
 		drawPicture();
 	}
 	double deltaPressure = 1;
-	if (key == '4')
+
+	if (key == '4') // decrease temperature
 	{
-		pressure += deltaPressure;
-		
+		GasPressure -= deltaPressure;
+		printf("\n Gas Pressure in millitorr = %f", GasPressure);
+		Drag = PressureConstant * GasPressure;
 	}
-	if (key == '4')
+	if (key == '$') // increase temperature
 	{
+		GasPressure += deltaPressure;
+		printf("\n Gas Pressure in millitorr = %f", GasPressure);
+		Drag = PressureConstant * GasPressure;
 	}
 	if (key == 'h') 
 	{

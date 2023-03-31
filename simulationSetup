@@ -68,11 +68,17 @@ BottomPlateConstant = 6.88e5;
 
 * This is your drag coeffecent. It needs to get tied to pressure.
 * This is in kg/seconds
-* Drag = 0.3; Double
+* Drag equals 0.3; Double
 
-* Pressure will be a value which drag is dependent on. More pressure means more drag.
-* Not quite sure which unit pressure is in.
-Pressure = 50; Double
+* We will use temperature instead, measured in Kelvin.
+* This is the temperature of the neutral gas (the argon).
+GasTemperature = 300;
+
+* This is the pressure of the gas, measured in millitorr.
+GasPressure = 130;
+
+* Mass of argon gas molecule measured in atomic mass units (amu, aka Daltons).
+NeutralGasMass = 39.95;
 
 * Your time step. It will be this much of a time unit, whatever that ends up being.
 Dt = 0.005; Double

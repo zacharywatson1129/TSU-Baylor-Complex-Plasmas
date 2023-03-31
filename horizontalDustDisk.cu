@@ -64,6 +64,12 @@ double 	BottomPlateConstant;
 
 double  Pressure; // Drag is dependent on pressure.
 double 	Drag;
+double  PressureConstant;
+double  GasTemperature;
+double  GasPressure;
+double  NeutralGasMass;
+
+
 
 double 	Dt;
 int 	DrawRate;
@@ -195,7 +201,16 @@ void readSimulationParameters()
 		data >> BottomPlateConstant;
 		
 		getline(data,name,'=');
-		data >> Drag;
+		data >> GasTemperature;
+		
+		getline(data,name,'=');
+		data >> GasPressure;
+		
+		getline(data,name,'=');
+		data >> NeutralGasMass;		
+		
+		//getline(data,name,'=');
+		//data >> Drag;
 		
 		getline(data,name,'=');
 		data >> Dt;
@@ -233,7 +248,10 @@ void readSimulationParameters()
 	printf("\n RadiusOfCavity = %f centimeters", RadiusOfCavity);
 	printf("\n HeightOfCavity = %f centimeters", HeightOfCavity);
 	printf("\n BottomPlateConstant = %e kilograms*second-2*coulomb-1", BottomPlateConstant);
-	printf("\n Drag = %e ???", Drag);
+	//printf("\n Drag = %e ???", Drag);
+	printf("\n GasTemperature = %f Kelvin", GasTemperature);
+	printf("\n GasPressure = %f millitorr", GasPressure);
+	printf("\n NeutralGasMass = %f atomic mass units, amu, also called Daltons", NeutralGasMass);
 	printf("\n Dt = %f number of divisions of the final time unit.", Dt);
 	printf("\n DrawRate = %d Dts between picture draws", DrawRate);
 	printf("\n PrintTimeRate = %d Dts between time prints to the screen", PrintTimeRate);
@@ -242,6 +260,7 @@ void readSimulationParameters()
 	printf("\n\n ********************************************************************************");
 	printf("\n Parameter file has been read");
 	printf("\n ********************************************************************************\n");
+	//exit(0);
 }
 
 void allocateMemory()
@@ -403,8 +422,65 @@ void PutConstantsIntoOurUnits()
 	BottomPlateConstant = BottomPlateConstant*1.0e3;
 	BottomPlateConstant = BottomPlateConstant*TimeUnit*TimeUnit*ChargeUnit/MassUnit;
 	
-	// This needs to be changed into our units ??????????????
-	Drag *= 1.0;
+	
+	//GasPressure /= 1000.0; // This converts the gas pressure from millitorr to torr
+	//GasPressure *= (101325.0/760.0); // This converts from torr to Pascal.
+	// 1 Pascal = F / A = N / m^2 = kg*m/s^2 / m^2 = kg / (s^2 * m).
+	//GasPressure /= MassUnit;
+	//GasPressure *= TimeUnit*TimeUnit*LengthUnit; // Put it into our units.
+	
+	
+	// Will clean this up.
+	double delta = 1.44;
+	// what we had.
+	// this is in (m^2*kg)/(s^2*K)
+	double boltzmann = 1.3806493e-23;
+	
+	// I know this part of the formula ________________________________________________________[     here     ] is the part that converts
+	// pressure to Pascals. Where is the part that converts the kg part to torr.           
+	//PressureConstant = (4.0/3.0)*sqrt(8.0)*delta*PI*(1.0/sqrt(boltzmann))*sqrt(NeutralGasMass)*(101325.0/760.0)*sqrt(1.66054e-27)*(1000/sqrt(300))*((LengthUnit*LengthUnit*TimeUnit)/MassUnit);
+	
+	PressureConstant = (4.0/3.0)*sqrt(8.0)*delta*(1.0/sqrt(boltzmann*1000))*sqrt(PI*NeutralGasMass/6.022e23)*(101325.0/760.0)*(1.0/sqrt(GasTemperature))*((LengthUnit*LengthUnit*TimeUnit)/MassUnit);
+	
+	// This was what we had done.
+	Drag = PressureConstant * GasPressure;
+	
+	
+	// what i tried.
+	/*double boltzmann = 1.3806493e-20; // Equivalent of multiplying normal value, which has kg, by 100, to put it into g, which converts to our mass unit.
+	
+	// -----------------------------------------------------------------------------------------------------
+	// This is what I tried.	
+	NeutralGasMass /= 6.022e23; // This converts from amu to grams.
+	// Not going to convert to the other units yet, see note below****
+	
+	GasPressure /= 1000.0; // This converts the gas pressure from millitorr to torr
+	GasPressure *= (101325.0/760.0); // This converts from torr to Pascal.
+	// 1 Pascal = F / A = N / m^2 = kg*m/s^2 / m^2 = kg / (s^2 * m).
+	//GasPressure /= MassUnit;
+	//GasPressure *= TimeUnit*TimeUnit*LengthUnit; // Put it into our units.
+
+	// ****Before multiplying PressureConstant by GasPressure, what if we calculate it all in SI units? so grams, meters, seconds, Kelvin. 
+	// Then, we * or / to get into our units.
+	
+	PressureConstant = (4.0/3.0)*delta*(sqrt(8*PI*NeutralGasMass))/(sqrt(boltzmann*GasTemperature));
+	//PressureConstant *= LengthUnit/TimeUnit;	
+	// -----------------------------------------------------------------------------------------------------
+	
+	
+	// This was what we had done. Do not delete.
+	//PressureConstant = (4.0/3.0)*sqrt(8.0)*delta*PI*(1.0/sqrt(boltzmann))*sqrt(NeutralGasMass)*(101325.0/760.0)*sqrt(1.66054e-27)*(1000/sqrt(300))*((LengthUnit*LengthUnit*TimeUnit)/MassUnit);
+	
+	// This was what we had done.
+	Drag = PressureConstant * GasPressure;
+	
+	// Added in by me.
+	Drag *= ((LengthUnit*LengthUnit*TimeUnit)/MassUnit);
+	
+	*/
+	
+	//Drag = 1000.0;
+	printf("\n\n Drag = %e \n\n", Drag);
 	
 	// CutOffMultiplier is just a multiplier so no adjustment is needed.
 	// Dt is a percent of the time unit so no need to change
@@ -438,8 +514,8 @@ void PutConstantsIntoOurUnits()
 	printf("\n PrintTimeRate = %d", PrintTimeRate);
 	
 	printf("\n\n ********************************************************************************");
-	printf("\n Constants have been put into our units.");
-	printf("\n ********************************************************************************\n");
+	printf("\nConstants have been put into our units.");
+	printf("\n********************************************************************************\n");
 }
 
 void setInitialConditions()
@@ -521,6 +597,7 @@ void setInitialConditions()
 		}
 		diameter = BaseDustDiameter + DustDiameterStandardDeviation*randomNumber;
 		//printf("diameter = %f compute units or %f microns\n", diameter , diameter*LengthUnit*1000000.0);
+		//exit(0);
 		radius = diameter/2.0;
 		
 		// Now the mass of this dust particle will be determined off of its diameter and its density (at present all the dust particles have the same density).
@@ -804,7 +881,7 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 		ionWakeInfoGPU[myId].companionId = minId; // Saving the closest dust's ID so it can be adjusted in the move function.
 		
 		// Adding on ionWake force from yourself.
-		forceMeY += -(chargeMe*ionWakeChargePercentMe*chargeMe/ionWakeLenghtMe)*(1.0 + ionWakeLenghtMe/debyeLength)*exp(-ionWakeLenghtMe/debyeLength);
+		forceMeY += -(chargeMe*ionWakeChargePercentMe*chargeMe/ionWakeLenghtMe)*(1.0f + ionWakeLenghtMe/(10.0f*debyeLength))*exp(-ionWakeLenghtMe/(10.0f*debyeLength));
 		
 		// Getting dust to bottom plate force.
 		// e field is bottomPlatesCharge*(posMeY - sheathHeight). This is the linear force that starts at the sheath. We got this from Dr. Mathews.
@@ -815,19 +892,19 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 		
 		// Getting culomic push back from the cavity.
 		d  = sqrt(posMeX*posMeX + posMeZ*posMeZ);
-		if (d != 0.0) // If it is zero nothing needs to be done.
+		if (d != 0.0f) // If it is zero nothing needs to be done.
 		{
-			forceMag = -chargeMe*CavityConfinementConstant*pow(d/radiusOfCavity,12.0);
+			forceMag = -chargeMe*CavityConfinementConstant*pow(d/radiusOfCavity,12.0f);
 			forceMeX += forceMag*posMeX/d;
 			forceMeZ += forceMag*posMeZ/d;
 		}
 		
 		// Getting force of gravity
-		forceMeY += -1.0*gravity*massMe;
+		forceMeY += -1.0f*gravity*massMe;
 		
 		// All the forces have been sumed up for the dust grain so load them up to carry forward to the move function.
 		// The mass was not changed. I just loaded it for completeness and just incase it gets changed in the future.
-		if(0.001 < posMeY)
+		if(0.001f < posMeY)
 		{
 			dustForce[myId].x = forceMeX;
 			dustForce[myId].y = forceMeY;
@@ -837,25 +914,25 @@ __global__ void getForces(float4 *dustPos, float4 *dustVel, float4 *dustForce, f
 		else // If the dust grain gets too close or passes through the floor. I put it at the top of the sheath, set its force to zero and set its mass, charge and diameter to the base (maybe it was too heavy).
 		{
 			dustPos[myId].y = sheathHeight;
-			dustPos[myId].w = 1.0;
+			dustPos[myId].w = 1.0f;
 
-			dustVel[myId].x = 0.0;
-			dustVel[myId].y = 0.0;
+			dustVel[myId].x = 0.0f;
+			dustVel[myId].y = 0.0f;
 
-			dustVel[myId].z = 0.0;
+			dustVel[myId].z = 0.0f;
 			dustVel[myId].w = baseDustDiameter;
 			
-			dustForce[myId].x = 0.0;
-			dustForce[myId].y = 0.0;
-			dustForce[myId].z = 0.0;
-			dustForce[myId].w = 1.0;
+			dustForce[myId].x = 0.0f;
+			dustForce[myId].y = 0.0f;
+			dustForce[myId].z = 0.0f;
+			dustForce[myId].w = 1.0f;
 			
 			printf("\n myId = %d posMeX = %f posMeY = %f posMeZ = %f MassMe = %f, chargeMe = %f\n", myId, posMeX, posMeY, posMeZ, massMe, chargeMe);
 		}
 	}
 }
 		
-__global__ void moveDust(float4 *dustPos, float4 *dustVel, float4 *dustForce, float4 *ionWake, ionWakeInfoStructure *ionWakeInfoGPU, float baseIonWakeChargePercent, float baseIonWakeLength, float debyeLength, float cutOffMultiplier, float drag, float electronCharge, float baseElectronsPerUnitDiameter, float electronStdPerUnitDiameter, float dt, float time, int numberOfDustParticles)
+__global__ void moveDust(float4 *dustPos, float4 *dustVel, float4 *dustForce, float4 *ionWake, ionWakeInfoStructure *ionWakeInfoGPU, float baseIonWakeChargePercent, float baseIonWakeLength, float debyeLength, float cutOffMultiplier, float drag, float electronCharge, float baseElectronsPerUnitDiameter, float electronStdPerUnitDiameter, float dt, float time, int numberOfDustParticles, double GasTemperature)
 {
 	// Moving the system forward in time with leap-frog and randomly adjusting the charge on each dust particle.
 	curandState state;
@@ -894,18 +971,42 @@ __global__ void moveDust(float4 *dustPos, float4 *dustVel, float4 *dustForce, fl
 			ionWake[id].x = baseIonWakeChargePercent;
 			ionWake[id].y = baseIonWakeLength;
 		}	
+		/*double delta = 1.44; // The coefficient delta accounts for the type of reflection or absorption of the neutral gas particle.
+		double dustRadius = dustVel[id].w / 2;
+		double N = 1; // Not sure right now.
+		double k = 1.380649e-23; // Boltzmann's constant
+		double gasMass = 1;
+		double c = sqrt((8*k*GasTemperature)/(PI * dustForce[id].w));
+		double drag = delta * 4 * PI / 3 * dustRadius * dustRadius * N * gasMass * c;*/
+		//printf("drag is %f\n",drag);
+		
+		// We use this multiple times, and it makes the code cleaner to read.
+		float dustRadius = dustVel[id].w / 2.0f;
 		
 		if(time == 0.0)
 		{
-			dustVel[id].x += 0.5f*dt*(dustForce[id].x - drag*dustVel[id].x)/dustForce[id].w;
-			dustVel[id].y += 0.5f*dt*(dustForce[id].y - drag*dustVel[id].y)/dustForce[id].w;
-			dustVel[id].z += 0.5f*dt*(dustForce[id].z - drag*dustVel[id].z)/dustForce[id].w;
+			// dustForce.w is mass, just an fyi.
+			// dustVelocity.w is diameter.
+			// dustPosition.w is charge.
+			//dustVel[id].x += 0.5f*dt*(dustForce[id].x - drag*dustVel[id].x)/dustForce[id].w;
+			//dustVel[id].y += 0.5f*dt*(dustForce[id].y - drag*dustVel[id].y)/dustForce[id].w;
+			//dustVel[id].z += 0.5f*dt*(dustForce[id].z - drag*dustVel[id].z)/dustForce[id].w;
+			
+			// Updated to include r^2
+			dustVel[id].x += 0.5f*dt*(dustForce[id].x - drag*dustRadius*dustRadius*dustVel[id].x)/dustForce[id].w;
+			dustVel[id].y += 0.5f*dt*(dustForce[id].y - drag*dustRadius*dustRadius*dustVel[id].y)/dustForce[id].w;
+			dustVel[id].z += 0.5f*dt*(dustForce[id].z - drag*dustRadius*dustRadius*dustVel[id].z)/dustForce[id].w;
 		}
 		else
 		{
-			dustVel[id].x += dt*(dustForce[id].x - drag*dustVel[id].x)/dustForce[id].w;
-			dustVel[id].y += dt*(dustForce[id].y - drag*dustVel[id].y)/dustForce[id].w;
-			dustVel[id].z += dt*(dustForce[id].z - drag*dustVel[id].z)/dustForce[id].w;
+			//dustVel[id].x += dt*(dustForce[id].x - drag*dustVel[id].x)/dustForce[id].w;
+			//dustVel[id].y += dt*(dustForce[id].y - drag*dustVel[id].y)/dustForce[id].w;
+			//dustVel[id].z += dt*(dustForce[id].z - drag*dustVel[id].z)/dustForce[id].w;
+			
+			// Updated to include r^2
+			dustVel[id].x += dt*(dustForce[id].x - drag*dustRadius*dustRadius*dustVel[id].x)/dustForce[id].w;
+			dustVel[id].y += dt*(dustForce[id].y - drag*dustRadius*dustRadius*dustVel[id].y)/dustForce[id].w;
+			dustVel[id].z += dt*(dustForce[id].z - drag*dustRadius*dustRadius*dustVel[id].z)/dustForce[id].w;
 		}
 
 		dustPos[id].x += dustVel[id].x*dt;
@@ -948,7 +1049,7 @@ void n_body()
 	if(Pause != 1)
 	{	
 		getForces<<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseDustDiameter, CoulombConstant, DebyeLength, CutOffMultiplier, RadiusOfCavity, CavityConfinementConstant, HeightOfCavity, SheathHeight, BaseIonWakeChargePercent, BottomPlateConstant, Gravity, NumberOfDustParticles);
-		moveDust <<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseIonWakeChargePercent, BaseIonWakeLength, DebyeLength, CutOffMultiplier, Drag, ElectronCharge, BaseElectronsPerUnitDiameter, electronStdPerUnitDiameter, Dt, RunTime, NumberOfDustParticles);
+		moveDust <<<Grid, Block>>>(DustPositionGPU, DustVelocityGPU, DustForceGPU, IonWakeGPU, IonWakeInfoGPU, BaseIonWakeChargePercent, BaseIonWakeLength, DebyeLength, CutOffMultiplier, Drag, ElectronCharge, BaseElectronsPerUnitDiameter, electronStdPerUnitDiameter, Dt, RunTime, NumberOfDustParticles, GasTemperature);
 				
 		DrawTimer++;
 		if(DrawTimer == DrawRate) 
